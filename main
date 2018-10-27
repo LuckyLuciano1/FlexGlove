@@ -11,11 +11,12 @@ struct sensor{//creating a struct to manage all six sensors
 struct servo{ 
   int port;//port of corresponding motor
   double value;//position of motor
-  Servo objservo;//storing the object 'servo'
+  //Servo objservo;//storing the object 'servo'
 };
 
 sensor SensorArray[4];//creating vector to store sensor structs
-servo ServoArray [4];//creating vector to store motor structs
+servo ServoArray [4];//creating vector to store motor structs info
+Servo ServoArray2 [4];//creating vector to store the servos specifically
 
 double sensitivity = .1;//if the new value of the flex sensor is less than the sensitivity, finger will be considered stationary
 int pairnumber =  0;//number of paired servos/sensors
@@ -27,8 +28,8 @@ void setup() {
 
 for(int x  = 0; x <= pairnumber-1; x++){//defining all six structs within the vector, and initializing values
   SensorArray[x] = {x, 0.00};
-  ServoArray[x] = {x+3, 0.00};//'+3' shifts ports to correct value (servo ports go from 3-7 rather than 0-4 in the case of the flex sensors)
-  ServoArray[x].objservo.attach(ServoArray[x].port);//a bit redundant (port is both stored in the struct, and used immediately- but I figure port number might be good info to have for later,m and it will make the struct more comprehensive)
+  ServoArray[x] = {x+9, 0.00};//'+9' shifts ports to correct value (servo ports go from 3-7 rather than 0-4 in the case of the flex sensors)
+  ServoArray2[x].attach((ServoArray[x].port)+3);//a bit redundant (port is both stored in the struct, and used immediately- but I figure port number might be good info to have for later,m and it will make the struct more comprehensive)
 }
 
 }
@@ -86,8 +87,9 @@ ServoArray[x].objservo.write(ServoArray[x].value);//move motor to position ident
 
 Serial.print("sensor: ");
 Serial.print(SensorArray[x].value);
+
 Serial.print(" servo: ");
 Serial.println(ServoArray[x].value);
 }//end of for loop
-delay(20);
+//delay(20);
 }//end of 'loop' section
