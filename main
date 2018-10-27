@@ -18,25 +18,25 @@ sensor SensorArray[4];//creating vector to store sensor structs
 servo ServoArray [4];//creating vector to store motor structs info
 Servo ServoArray2 [4];//creating vector to store the servos specifically
 
-double sensitivity = .1;//if the new value of the flex sensor is less than the sensitivity, finger will be considered stationary
-int pairnumber =  5;//number of paired servos/sensors
+//double sensitivity = .1;//if the new value of the flex sensor is less than the sensitivity, finger will be considered stationary
+int pairnumber =  2;//number of paired servos/sensors
 
 void setup() {
  //lcd.begin(16, 2);
  //lcd.clear();//clears lcd monitor
  Serial.begin(9600);//sets up console window
 
-for(int x  = 0; x <= (pairnumber-1); x++){//defining all six structs within the vector, and initializing values
+for(int x  = 1; x <= (pairnumber-1); x++){//defining all six structs within the vector, and initializing values
   SensorArray[x] = {x, 0.00};
-  //ServoArray[x] = {x+2, 0.00};//'+2' shifts ports to correct value (servo ports go from 3-7 rather than 0-4 in the case of the flex sensors)
-  //ServoArray2[x].attach((ServoArray[x].port)+3);//a bit redundant (port is both stored in the struct, and used immediately- but I figure port number might be good info to have for later,m and it will make the struct more comprehensive)
+  ServoArray[x] = {x+2, 0.00};//'+2' shifts ports to correct value (servo ports go from 3-7 rather than 0-4 in the case of the flex sensors)
+  ServoArray2[x].attach((ServoArray[x].port)+3);//a bit redundant (port is both stored in the struct, and used immediately- but I figure port number might be good info to have for later,m and it will make the struct more comprehensive)
 }
 
 }
 
 void loop() {
 
-for(int x  = 0; x <= (pairnumber-1); x++){//this for loop runs through each servo and sensor pair (1-5, or 0-6)
+for(int x  = 1; x <= (pairnumber-1); x++){//this for loop runs through each servo and sensor pair (1-5, or 0-6)
 /*
 //////////////////////////////////////////////////OUTPUTTING FLEX TO FINGER MOVEMENT ON LCD (CURRENTLY DISABLED)/////////////////////////////////////
 //+ = flex increasing (fingers curling)
@@ -78,8 +78,8 @@ for(int x  = 0; x <= (pairnumber-1); x++){//this for loop runs through each serv
 SensorArray[x].value = analogRead(SensorArray[x].port);//updating 'flex' magnitude to current values
 
 //600-900 is the flex sensor reading, servo's range is 0-180
-//ServoArray[x].value = map(SensorArray[x].value, 600, 900, 0, 180);//map() function reduces range of 0-1023 (0 to 5 volts) to 600-900
-//ServoArray[x].value = constrain(ServoArray[x].value, 0, 180);//constrain() 'clips' numbers into a specifid range (if above/below range, makes that number max/min of range. if within range, no change)
+ServoArray[x].value = map(SensorArray[x].value, 600, 900, 0, 180);//map() function reduces range of 0-1023 (0 to 5 volts) to 600-900
+ServoArray[x].value = constrain(ServoArray[x].value, 0, 180);//constrain() 'clips' numbers into a specifid range (if above/below range, makes that number max/min of range. if within range, no change)
 
 ServoArray[x].objservo.write(ServoArray[x].value);//move motor to position identified via map()/constrain()/analogRead()
 
