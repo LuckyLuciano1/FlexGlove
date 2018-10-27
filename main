@@ -1,36 +1,49 @@
 #include <LiquidCrystal.h>
+#include <Servo.h>
 
 LiquidCrystal lcd(13, 12, 11, 10, 9, 8);
 
 struct sensor{//creating a struct to manage all six sensors
-   int port;
-   double value;
+   int port;//port of corresponding sensor
+   double value;//degree to which sensor is flexed
 };
 
-sensor SensorArray[5];//creating vector to store sensor structs
+struct servo{ 
+  int port;//port of corresponding motor
+  double value;//position of motor
+  Servo objservo;//storing the object 'servo'
+};
 
+sensor SensorArray[4];//creating vector to store sensor structs
+servo ServoArray [4];//creating vector to store motor structs
 
-
- double sensitivity = .1;//if the new value of the flex sensor is less than the sensitivity, finger will be considered stationary
+double sensitivity = .1;//if the new value of the flex sensor is less than the sensitivity, finger will be considered stationary
+int pairnumber =  0;//number of paired servos/sensors
 
 void setup() {
  lcd.begin(16, 2);
  lcd.clear();//clears lcd monitor
  Serial.begin(9600);//sets up console window
 
-for(int x  = 0; x <= 5; x++){//defining all six structs within the vector, and initializing values
+for(int x  = 0; x <= pairnumber-1; x++){//defining all six structs within the vector, and initializing values
   SensorArray[x] = {x, 0.00};
+  ServoArray[x] = {x+3, 0.00};//'+3' shifts ports to correct value (servo ports go from 3-7 rather than 0-4 in the case of the flex sensors)
+  ServoArray[x].objservo.attach(ServoArray[x].port);//a bit redundant (port is both stored in the struct, and used immediately- but I figure port number might be good info to have for later,m and it will make the struct more comprehensive)
 }
+
 }
 
 void loop() {
-//////////////////////////////////////////////////OUTPUTTING FLEX TO FINGER MOVEMENT ON LCD/////////////////////////////////////
+
+for(int x  = 0; x <= pairnumber-1; x++){//this for loop runs through each servo and sensor pair (1-5, or 0-6)
+/*
+//////////////////////////////////////////////////OUTPUTTING FLEX TO FINGER MOVEMENT ON LCD (CURRENTLY DISABLED)/////////////////////////////////////
 //+ = flex increasing (fingers curling)
 //blank = flex stationary (no movement)
 //- = flex decreasing (fingers straightening)
 //* = error; impossible?
 
-for(int x  = 0; x <= 5; x++){
+
  if(abs(SensorArray[x].value - analogRead(SensorArray[x].port)) <= sensitivity){//if change in sensor is below sensitivity, mark as stationary
   lcd.setCursor(x, 0);
   lcd.print(" ");
@@ -59,8 +72,22 @@ for(int x  = 0; x <= 5; x++){
   lcd.setCursor(x, 1);
   lcd.print("*");
  }
-//////////////////////////////////UPDATING VARIABLES////////////////////////////////////////////////
+ */
+//////////////////////////////////UPDATING VARIABLES AND MOVING MOTORS////////////////////////////////////////////////
 SensorArray[x].value = analogRead(SensorArray[x].port);//updating 'flex' magnitude to current values
-}
 
-}
+//map() function reduces range of 0-1023 (0 to 5 volts) to 600-900
+ServoArray[x].value = map(SensorArray[x].value, 600, 900, 0, 180);//600-900 is the flex sensor reading, servo's range is 0-180
+//constrain() 'clips' numbers into a specifid range (if above/below range, makes that number max/min of range. if within range, no change)
+ServoArray[x].value = constrain(ServoArray[x].value, 0, 180);
+
+ServoArray[x].objservo.write(ServoArray[x].value);//move motor to position identified via map()/constrain()/analogRead()
+
+
+Serial.print("sensor: ");
+Serial.print(SensorArray[x].value);
+Serial.print(" servo: ");
+Serial.println(ServoArray[x].value);
+}//end of for loop
+delay(20);
+}//end of 'loop' section
