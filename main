@@ -7,7 +7,7 @@ struct sensor{//creating a struct to manage all six sensors
    int port;//port of corresponding sensor
    double value;//degree to which sensor is flexed
    
-   double min_value;//range of numbers that each flex sensor bends to; roughly 600-900. custom set in code later
+   double min_value;//range of numbers that each flex sensor bends to; roughly 600-900. adjusted in code later
    double max_value;
 };
 
@@ -29,26 +29,10 @@ void setup() {
  Serial.begin(9600);//sets up console window
 
 for(int x  = 0; x <= (pairnumber-1); x++){//defining all six structs within the vector, and initializing values
-  SensorArray[x] = {x, 0.00};
+  SensorArray[x] = {x, 0.00, 600, 900};//600-900 is the roiugh range of the sensors. range is adjusted over time within the program.
   ServoArray[x] = {(x+2), 0.00};//'+2' shifts ports to correct value (servo ports go from 3-7 rather than 0-4 in the case of the flex sensors)
   ServoArray[x].objservo.attach(ServoArray[x].port);//a bit redundant (port is both stored in the struct, and used immediately- but I figure port number might be good info to have for later,m and it will make the struct more comprehensive)
 }
-
-//setting up min and max values of sensors; experimentally found (and as a result cannot be assigned through a for loop without a whole buynch of if/else statements)
-SensorArray[0].min_value = ;
-SensorArray[0].max_value = ;
-
-SensorArray[1].min_value = 635.00;
-SensorArray[1].max_value = 815.00;
-
-SensorArray[2].min_value = 645.00;
-SensorArray[2].max_value = 850.00;
-
-SensorArray[3].min_value = 810.00;
-SensorArray[3].max_value = 940.00;
-
-SensorArray[4].min_value = ;
-SensorArray[4].max_value = ;
 }
 
 void loop() {
@@ -93,6 +77,9 @@ for(int x  = 0; x <= (pairnumber-1); x++){//this for loop runs through each serv
  */
 //////////////////////////////////UPDATING VARIABLES AND MOVING MOTORS////////////////////////////////////////////////
 SensorArray[x].value = analogRead(SensorArray[x].port);//updating 'flex' magnitude to current values
+
+if(SensorArray[x].value > SensorArray[x].max_value) {SensorArray[x].max_value = SensorArray[x].value}//adjusting range of numbers that each flex sensor has.Here, if a number exceeds the range, it becomes the new maximum
+if(SensorArray[x].value < SensorArray[x].min_value) {SensorArray[x].min_value = SensorArray[x].value}//here, if a number is below the minimum, it becomes the new minimum.
 
 //min/max_value is the flex sensor reading, servo's range is 0-180
 ServoArray[x].value = map(SensorArray[x].value, SensorArray[x].min_value, SensorArray[x].max_value, 0, 180);//map() function reduces range of 0-1023 (0 to 5 volts) to 600-900
