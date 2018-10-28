@@ -19,18 +19,18 @@ int pairnumber =  5;//number of paired servos/sensors
 
 //////////////////////////////////PROGRAM BEGIN////////////////////////////////////////////////
 void setup() {
- Serial.begin(9600);//sets up console window
+Serial.begin(9600);//sets up console window
 
-for(int x  = 0; x <= (pairnumber-1); x++){//defining all six structs within the vector, and initializing values
+for(int x  = 1; x <= (pairnumber-1); x++){//defining all six structs within the vector, and initializing values
   SensorArray[x] = {x, 0, 1000, 0};//600-900 is the rough range of the sensors. range is adjusted over time within the program. The range is reversed to allow for the actual min/max to be established correctly
-  //ServoArray[x] = {(x+2), 0};//'+2' shifts ports to correct value (servo ports go from 3-7 rather than 0-4 in the case of the flex sensors)
-  //ServoArray[x].objservo.attach(ServoArray[x].port);//a bit redundant (port is both stored in the struct, and used immediately- but I figure port number might be good info to have for later,m and it will make the struct more comprehensive)
+  ServoArray[x] = {(x+2), 0};//'+2' shifts ports to correct value (servo ports go from 3-7 rather than 0-4 in the case of the flex sensors)
+  ServoArray[x].objservo.attach(ServoArray[x].port);//a bit redundant(port is both stored in the struct, and used immediately then never again- but I figure port number might be good info to have for later, and it will make the struct more comprehensive)
 }
 }
 
 void loop() {
 
-for(int x  = 0; x <= (pairnumber-1); x++){//this for loop runs through each servo and sensor pair (1-5, or 0-6)
+for(int x  = 1; 0 <= (pairnumber-1); x++){//this for loop runs through each servo and sensor pair (1-5, or 0-6)
 
 //////////////////////////////////UPDATING VARIABLES AND MOVING MOTORS////////////////////////////////////////////////
 SensorArray[x].value = analogRead(SensorArray[x].port);//updating 'flex' magnitude to current values
@@ -44,6 +44,11 @@ ServoArray[x].value = constrain(ServoArray[x].value, 0, 180);//constrain() 'clip
 
 ServoArray[x].objservo.write(ServoArray[x].value);//move motor to position identified via map()/constrain()/analogRead()
 
+Serial.print("sensor");
+Serial.print(x);
+Serial.print(": ");
+Serial.print(SensorArray[x].value);
+Serial.print(", ");
 /*Serial.print("sensor_min_");
 Serial.print(x);
 Serial.print(": ");
