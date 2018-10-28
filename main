@@ -1,14 +1,12 @@
-//#include <LiquidCrystal.h>
 #include <Servo.h>
 
-//LiquidCrystal lcd(13, 12, 11, 10, 9, 8);
-
+//////////////////////////////////STRUCT AND VARIABLE DEFINITIONS////////////////////////////////////////////////
 struct sensor{//creating a struct to manage all six sensors
    int port;//port of corresponding sensor
    double value;//degree to which sensor is flexed
    
-   double min_value;//range of numbers that each flex sensor bends to; roughly 600-900. adjusted in code later
-   double max_value;
+   int min_value;//range of numbers that each flex sensor bends to; roughly 600-900. adjusted in code later
+   int max_value;
 };
 
 struct servo{ 
@@ -19,75 +17,37 @@ struct servo{
 
 sensor SensorArray[4];//creating vector to store sensor structs
 servo ServoArray [4];//creating vector to store motor structs info
-
-//double sensitivity = .1;//if the new value of the flex sensor is less than the sensitivity, finger will be considered stationary
 int pairnumber =  5;//number of paired servos/sensors
 
+//////////////////////////////////PROGRAM BEGIN////////////////////////////////////////////////
 void setup() {
- //lcd.begin(16, 2);
- //lcd.clear();//clears lcd monitor
  Serial.begin(9600);//sets up console window
 
 for(int x  = 0; x <= (pairnumber-1); x++){//defining all six structs within the vector, and initializing values
-  SensorArray[x] = {x, 0.00, 900, 600};//600-900 is the rough range of the sensors. range is adjusted over time within the program. The range is reversed to allow for the actual min/max to be established correctly
-  ServoArray[x] = {(x+2), 0.00};//'+2' shifts ports to correct value (servo ports go from 3-7 rather than 0-4 in the case of the flex sensors)
-  ServoArray[x].objservo.attach(ServoArray[x].port);//a bit redundant (port is both stored in the struct, and used immediately- but I figure port number might be good info to have for later,m and it will make the struct more comprehensive)
+  SensorArray[x] = {x, 0.00, 600, 900};//600-900 is the rough range of the sensors. range is adjusted over time within the program. The range is reversed to allow for the actual min/max to be established correctly
+  //ServoArray[x] = {(x+2), 0.00};//'+2' shifts ports to correct value (servo ports go from 3-7 rather than 0-4 in the case of the flex sensors)
+  //ServoArray[x].objservo.attach(ServoArray[x].port);//a bit redundant (port is both stored in the struct, and used immediately- but I figure port number might be good info to have for later,m and it will make the struct more comprehensive)
 }
 }
 
 void loop() {
 
 for(int x  = 0; x <= (pairnumber-1); x++){//this for loop runs through each servo and sensor pair (1-5, or 0-6)
-/*
-//////////////////////////////////////////////////OUTPUTTING FLEX TO FINGER MOVEMENT ON LCD (CURRENTLY DISABLED)/////////////////////////////////////
-//+ = flex increasing (fingers curling)
-//blank = flex stationary (no movement)
-//- = flex decreasing (fingers straightening)
-//* = error; impossible?
 
-
- if(abs(SensorArray[x].value - analogRead(SensorArray[x].port)) <= sensitivity){//if change in sensor is below sensitivity, mark as stationary
-  lcd.setCursor(x, 0);
-  lcd.print(" ");
-  lcd.setCursor(x, 1);
-  lcd.print(" ");
- }
- else if (abs(SensorArray[x].value - analogRead(SensorArray[x].port)) > sensitivity){//if change in sensor is above sensitivity, determine if change is pos/neg and mark as so.
-  if((SensorArray[x].value - analogRead(SensorArray[x].port)) < 0){//printed above to prevent'blur' of lcd
-  lcd.setCursor(x, 0);
-  lcd.print("+");
-  }
-  else if((SensorArray[x].value - analogRead(SensorArray[x].port)) > 0){
-  lcd.setCursor(x, 1);
-  lcd.print("-");
-  }
-  else {//covering my bases (reports possible error)
-  lcd.setCursor(x, 0);
-  lcd.print("*");
-  lcd.setCursor(x, 1);
-  lcd.print("*");
-  }
- }
- else {//reporting possible error again
-  lcd.setCursor(x, 0);
-  lcd.print("*");
-  lcd.setCursor(x, 1);
-  lcd.print("*");
- }
- */
 //////////////////////////////////UPDATING VARIABLES AND MOVING MOTORS////////////////////////////////////////////////
 SensorArray[x].value = analogRead(SensorArray[x].port);//updating 'flex' magnitude to current values
 
-if(SensorArray[x].value > SensorArray[x].max_value) {SensorArray[x].max_value = SensorArray[x].value}//adjusting range of numbers that each flex sensor has.Here, if a number exceeds the range, it becomes the new maximum
-if(SensorArray[x].value < SensorArray[x].min_value) {SensorArray[x].min_value = SensorArray[x].value}//here, if a number is below the minimum, it becomes the new minimum.
+//if(SensorArray[x].value > SensorArray[x].max_value) {SensorArray[x].max_value = SensorArray[x].value;}//adjusting range of numbers that each flex sensor has.Here, if a number exceeds the range, it becomes the new maximum
+//if(SensorArray[x].value < SensorArray[x].min_value) {SensorArray[x].min_value = SensorArray[x].value;}//here, if a number is below the minimum, it becomes the new minimum.
 
 //min/max_value is the flex sensor reading, servo's range is 0-180
-ServoArray[x].value = map(SensorArray[x].value, SensorArray[x].min_value, SensorArray[x].max_value, 0, 180);//map() function reduces range of 0-1023 (0 to 5 volts) to 600-900
-ServoArray[x].value = constrain(ServoArray[x].value, 0, 180);//constrain() 'clips' numbers into a specifid range (if above/below range, makes that number max/min of range. if within range, no change)
+//ServoArray[x].value = map(SensorArray[x].value, SensorArray[x].min_value, SensorArray[x].max_value, 0, 180);//map() function reduces range of 0-1023 (0 to 5 volts) to 600-900
+//ServoArray[x].value = constrain(ServoArray[x].value, 0, 180);//constrain() 'clips' numbers into a specifid range (if above/below range, makes that number max/min of range. if within range, no change)
 
-ServoArray[x].objservo.write(ServoArray[x].value);//move motor to position identified via map()/constrain()/analogRead()
+//ServoArray[x].objservo.write(ServoArray[x].value);//move motor to position identified via map()/constrain()/analogRead()
 
-
+Serial.print("sensor_min_");
+/*
 Serial.print("sensor_min_");
 Serial.print(x);
 Serial.print(": ");
@@ -96,6 +56,7 @@ Serial.print("sensor_max_");
 Serial.print(x);
 Serial.print(": ");
 Serial.print(SensorArray[x].max_value);
+*/
 
 //Serial.print(" servo: ");
 //Serial.println(ServoArray[x].value);
